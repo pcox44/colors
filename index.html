@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Psychedelic Number Theory Art</title>
+<style>
+body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
+canvas { display: block; }
+#controls {
+  position: absolute; top: 10px; left: 10px;
+  background: rgba(0,0,0,0.6); color: #fff; padding: 12px;
+  border-radius: 8px;
+}
+select, input { margin: 4px 0; width: 160px; }
+label { font-size: 0.9em; display:block; margin-top:4px; }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<div id="controls">
+<label>Sequence:</label>
+<select id="sequence"></select>
+<label>Mode:</label>
+<select id="mode">
+  <option value="rainbow">Rainbow</option>
+  <option value="terminal">Terminal</option>
+  <option value="bw">Black & White</option>
+  <option value="rwb">Red-White-Blue</option>
+  <option value="halloween">Halloween</option>
+</select>
+<label>Max Number:</label>
+<input type="range" id="maxNumber" min="100" max="5000" value="2000">
+<label>Animation Speed:</label>
+<input type="range" id="speed" min="0.001" max="0.05" step="0.001" value="0.001">
+<label>Spiral Radius:</label>
+<input type="range" id="radius" min="1" max="20" step="0.5" value="6">
+<label>Trail Opacity:</label>
+<input type="range" id="trail" min="0" max="0.3" step="0.01" value="0.08">
+</div>
+<script>
+const canvas = document.getElementById('art');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// Number theory helpers
+function isPrime(n){if(n<2)return false;for(let i=2;i<=Math.sqrt(n);i++)if(n%i===0)return false;return true;}
+function fibonacci(n){if(n<=1)return n;let a=0,b=1;for(let i=2;i<=n;i++){[a,b]=[b,a+b];}return b;}
+function triangular(n){return n*(n+1)/2;}
+function factorCount(n){let c=0;for(let i=1;i<=n;i++)if(n%i===0)c++; return c;}
+
+// 15 lightweight sequences
+const sequences = {
+  "Primes": n=>isPrime(n),
+  "Fibonacci": n=>true,
+  "Squares": n=>true,
+  "Cubes": n=>true,
+  "Triangular": n=>true,
+  "Even": n=>n%2===0,
+  "Odd": n=>n%2===1,
+  "Multiples of 3": n=>n%3===0,
+  "Multiples of 5": n=>n%5===0,
+  "Pentagonal": n=>(Math.sqrt(24*n+1)+1)/6%1===0,
+  "Hexagonal": n=>(Math.sqrt(8*n+1)+1)/4%1===0,
+  "Harshad": n=>n%[...String(n)].reduce((a,d)=>a+Number(d),0)===0,
+  "Abundant": n=>{let s=0;for(let i=1;i<n;i++)if(n%i===0)s+=i;return s>n;},
+  "Deficient": n=>{let s=0;for(let i=1;i<n;i++)if(n%i===0)s+=i;return s<n;},
+  "Factor Count Even": n=>factorCount(n)%2===0
+};
+
+// Populate dropdown
+const seqSelect=document.getElementById('sequence');
+for(const key in sequences){
+  const opt=document.createElement('option');
+  opt.value=key;
+  opt.textContent=key;
+  seqSelect.appendChild(opt);
+}
+let currentSequence = seqSelect.value;
+seqSelect.addEventListener('change',()=>{ currentSequence = seqSelect.value; });
+
+// Color function
+function numberToColor(n,time,mode){
+  const t = time*0.02;
+  switch(mode){
+    case'rainbow': return `hsl(${(n*137.5 + t)%360}, 70%, 50%)`;
+    case'terminal': return `hsl(120, 100%, ${50 + 25*Math.sin(t + n)}%)`;
+    case'bw': const gray = 50 + 30*Math.sin(t + n); return `hsl(0,0%,${gray}%)`;
+    case'rwb': const colors=['red','white','blue']; return colors[Math.floor((Math.sin(t+n)+1)*0.5*colors.length)%colors.length];
+    case'halloween': return `hsl(${30 + 30*Math.sin(t+n)}, 100%, 50%)`;
+    default: return 'white';
+  }
+}
+
+// Fibonacci cache
+const fibCache=[0,1];
+function getFib(n){while(fibCache.length<=n){fibCache.push(fibCache[fibCache.length-1]+fibCache[fibCache.length-2]);}return fibCache[n];}
+
+// Draw polygon
+function drawShape(x,y,size,sides,color,rotation){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(rotation);
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  for(let i=0;i<sides;i++){
+    const angle=i*2*Math.PI/sides;
+    ctx.lineTo(Math.cos(angle)*size,Math.sin(angle)*size);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+let time=0;
+
+function draw(){
+  const maxNumber=parseInt(document.getElementById('maxNumber').value);
+  const speed=parseFloat(document.getElementById('speed').value);
+  const radiusScale=parseFloat(document.getElementById('radius').value);
+  const trailOpacity=parseFloat(document.getElementById('trail').value);
+  const mode=document.getElementById('mode').value;
+
+  ctx.fillStyle=`rgba(0,0,0,${trailOpacity})`;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Precompute sequence numbers
+  const seqNumbers = [];
+  for(let n=1;n<=maxNumber;n++){
+    if(sequences[currentSequence](n)){
+      if(currentSequence==="Fibonacci") seqNumbers.push(getFib(n));
+      else if(currentSequence==="Squares") seqNumbers.push(n*n);
+      else if(currentSequence==="Cubes") seqNumbers.push(n**3);
+      else if(currentSequence==="Triangular") seqNumbers.push(triangular(n));
+      else seqNumbers.push(n);
+    }
+  }
+
+  // Draw each number
+  seqNumbers.forEach((value,nIndex)=>{
+    const angle = value*137.508*Math.PI/180 + time*speed;
+    const r = Math.sqrt(value)*radiusScale;
+    const x = canvas.width/2 + r*Math.cos(angle);
+    const y = canvas.height/2 + r*Math.sin(angle);
+    const sides = 3 + factorCount(nIndex+1)%5; // number of sides 3-7
+    const size = 3 + Math.sin(time*0.02 + nIndex*0.05);
+    const color = numberToColor(value,time,mode);
+    const rotation = time*0.02 + nIndex*0.05;
+    drawShape(x,y,size,sides,color,rotation);
+  });
+
+  time += 1;
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+</body>
+</html>
