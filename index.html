@@ -1,159 +1,915 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Psychedelic Number Theory Art</title>
 <style>
-body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
-canvas { display: block; }
-#controls {
-  position: absolute; top: 10px; left: 10px;
-  background: rgba(0,0,0,0.6); color: #fff; padding: 12px;
-  border-radius: 8px;
+:root{
+  --bg0:#050816;
+  --bg1:#0b1028;
+  --panel:rgba(9,14,32,.72);
+  --panel2:rgba(255,255,255,.08);
+  --stroke:rgba(255,255,255,.18);
+  --text:#f8fafc;
+  --muted:#b6c2d9;
+  --accent:#7c3aed;
+  --accent2:#06b6d4;
+  --hot:#f97316;
+  --good:#22c55e;
+  --shadow:0 22px 70px rgba(0,0,0,.45);
 }
-select, input { margin: 4px 0; width: 160px; }
-label { font-size: 0.9em; display:block; margin-top:4px; }
+
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden}
+body{
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(124,58,237,.34), transparent 30%),
+    radial-gradient(circle at 82% 20%, rgba(6,182,212,.28), transparent 31%),
+    radial-gradient(circle at 56% 92%, rgba(249,115,22,.22), transparent 35%),
+    linear-gradient(135deg, var(--bg0), var(--bg1) 55%, #130821);
+}
+
+canvas{
+  display:block;
+  width:100vw;
+  height:100vh;
+}
+
+#art{
+  position:fixed;
+  inset:0;
+  z-index:0;
+}
+
+.vignette{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:1;
+  background:
+    radial-gradient(circle at center, transparent 0 45%, rgba(0,0,0,.32) 100%),
+    linear-gradient(to top, rgba(0,0,0,.34), transparent 28%);
+}
+
+.top-title{
+  position:fixed;
+  z-index:3;
+  top:22px;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+  width:min(720px, calc(100vw - 420px));
+  pointer-events:none;
+}
+
+.top-title h1{
+  margin:0;
+  font-size:clamp(1.7rem, 4vw, 4.2rem);
+  letter-spacing:-.07em;
+  line-height:.95;
+  text-shadow:0 0 30px rgba(255,255,255,.22);
+}
+
+.top-title p{
+  margin:.45rem 0 0;
+  color:var(--muted);
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-size:clamp(.65rem, 1.3vw, .86rem);
+}
+
+#controls{
+  position:fixed;
+  z-index:4;
+  top:18px;
+  left:18px;
+  width:340px;
+  max-height:calc(100vh - 36px);
+  overflow:auto;
+  padding:16px;
+  border:1px solid var(--stroke);
+  border-radius:24px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.035)),
+    var(--panel);
+  backdrop-filter: blur(18px);
+  box-shadow:var(--shadow);
+}
+
+.panel-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--stroke);
+  margin-bottom:14px;
+}
+
+.brand{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.brand strong{
+  font-size:1.05rem;
+  letter-spacing:-.03em;
+}
+
+.brand span{
+  font-size:.78rem;
+  color:var(--muted);
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:44px;
+  height:44px;
+  border-radius:16px;
+  color:white;
+  font-weight:950;
+  font-size:1.15rem;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 0 28px rgba(124,58,237,.40);
+}
+
+.control-group{
+  border:1px solid var(--stroke);
+  background:rgba(255,255,255,.055);
+  border-radius:18px;
+  padding:12px;
+  margin:12px 0;
+}
+
+.group-title{
+  font-size:.76rem;
+  color:#dbeafe;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  font-weight:950;
+  margin-bottom:9px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+label{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  color:var(--muted);
+  font-size:.86rem;
+  font-weight:800;
+  margin:10px 0 5px;
+}
+
+.value{
+  color:#fff;
+  font-variant-numeric:tabular-nums;
+  font-size:.82rem;
+  padding:2px 7px;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+}
+
+select,input,button{
+  font:inherit;
+}
+
+select{
+  width:100%;
+  color:#fff;
+  background:rgba(3,7,18,.78);
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:12px;
+  padding:10px 12px;
+  outline:none;
+  font-weight:850;
+}
+
+input[type="range"]{
+  width:100%;
+  accent-color:var(--accent2);
+}
+
+.button-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+
+button{
+  border:1px solid rgba(255,255,255,.20);
+  border-radius:14px;
+  padding:10px 11px;
+  cursor:pointer;
+  color:white;
+  font-weight:900;
+  background:rgba(255,255,255,.09);
+  box-shadow:0 8px 22px rgba(0,0,0,.20);
+  transition:.18s ease;
+}
+
+button:hover{
+  transform:translateY(-2px);
+  background:rgba(255,255,255,.16);
+  border-color:rgba(255,255,255,.36);
+}
+
+.primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-color:transparent;
+}
+
+.warm{
+  background:linear-gradient(135deg,#f97316,#db2777);
+  border-color:transparent;
+}
+
+.green{
+  background:linear-gradient(135deg,#16a34a,#14b8a6);
+  border-color:transparent;
+}
+
+#infoPanel{
+  position:fixed;
+  z-index:3;
+  right:18px;
+  bottom:18px;
+  width:min(420px, calc(100vw - 36px));
+  border:1px solid var(--stroke);
+  border-radius:24px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)),
+    var(--panel);
+  backdrop-filter: blur(18px);
+  box-shadow:var(--shadow);
+  padding:16px;
+}
+
+#sequenceName{
+  font-weight:950;
+  font-size:1.2rem;
+  letter-spacing:-.03em;
+}
+
+#sequenceDesc{
+  color:var(--muted);
+  line-height:1.45;
+  font-weight:650;
+  margin:.35rem 0 .8rem;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.stat{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  padding:10px;
+  min-height:64px;
+}
+
+.stat .k{
+  color:var(--muted);
+  font-size:.68rem;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-weight:950;
+}
+
+.stat .v{
+  margin-top:4px;
+  font-size:1.15rem;
+  font-weight:950;
+  font-variant-numeric:tabular-nums;
+}
+
+kbd{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:24px;
+  padding:2px 6px;
+  border-radius:7px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  color:#fff;
+  font-size:.75rem;
+  font-weight:950;
+}
+
+.hotkeys{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+  color:var(--muted);
+  font-size:.78rem;
+  font-weight:800;
+}
+
+.pill{
+  display:inline-flex;
+  gap:5px;
+  align-items:center;
+}
+
+.hide-ui #controls,
+.hide-ui #infoPanel,
+.hide-ui .top-title{
+  display:none;
+}
+
+@media (max-width: 860px){
+  #controls{
+    width:calc(100vw - 24px);
+    left:12px;
+    right:12px;
+    top:12px;
+    max-height:45vh;
+    border-radius:18px;
+  }
+  .top-title{
+    display:none;
+  }
+  #infoPanel{
+    left:12px;
+    right:12px;
+    bottom:12px;
+    width:auto;
+    border-radius:18px;
+  }
+  .stats{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
 </style>
 </head>
 <body>
 <canvas id="art"></canvas>
-<div id="controls">
-<label>Sequence:</label>
-<select id="sequence"></select>
-<label>Mode:</label>
-<select id="mode">
-  <option value="rainbow">Rainbow</option>
-  <option value="terminal">Terminal</option>
-  <option value="bw">Black & White</option>
-  <option value="rwb">Red-White-Blue</option>
-  <option value="halloween">Halloween</option>
-</select>
-<label>Max Number:</label>
-<input type="range" id="maxNumber" min="100" max="5000" value="2000">
-<label>Animation Speed:</label>
-<input type="range" id="speed" min="0.001" max="0.05" step="0.001" value="0.001">
-<label>Spiral Radius:</label>
-<input type="range" id="radius" min="1" max="20" step="0.5" value="6">
-<label>Trail Opacity:</label>
-<input type="range" id="trail" min="0" max="0.3" step="0.01" value="0.08">
+<div class="vignette"></div>
+
+<div class="top-title">
+  <h1>Psychedelic Number Theory Art</h1>
+  <p>Patterns hiding inside sequences, primes, divisors, and modular arithmetic</p>
 </div>
+
+<div id="controls">
+  <div class="panel-header">
+    <div class="brand">
+      <strong>Number Lab</strong>
+      <span>Interactive Generator</span>
+    </div>
+    <div class="badge">∑</div>
+  </div>
+
+  <div class="control-group">
+    <div class="group-title">Mathematical Source</div>
+    <label for="sequence">Sequence</label>
+    <select id="sequence"></select>
+
+    <label for="layout">Layout</label>
+    <select id="layout">
+      <option value="phyllotaxis">Golden Spiral</option>
+      <option value="archimedean">Archimedean Spiral</option>
+      <option value="mandala">Mandala Symmetry</option>
+      <option value="orbit">Orbit Rings</option>
+      <option value="grid">Modular Grid</option>
+      <option value="waves">Number Waves</option>
+    </select>
+
+    <label for="mode">Palette</label>
+    <select id="mode">
+      <option value="aurora">Aurora</option>
+      <option value="rainbow">Rainbow</option>
+      <option value="fire">Fire</option>
+      <option value="ocean">Ocean</option>
+      <option value="terminal">Terminal</option>
+      <option value="candy">Candy</option>
+      <option value="rwb">Red–White–Blue</option>
+      <option value="bw">Black & White</option>
+      <option value="halloween">Halloween</option>
+    </select>
+
+    <label for="shape">Shape</label>
+    <select id="shape">
+      <option value="auto">Auto by divisor count</option>
+      <option value="circle">Circles</option>
+      <option value="polygon">Polygons</option>
+      <option value="star">Stars</option>
+      <option value="dash">Light streaks</option>
+    </select>
+  </div>
+
+  <div class="control-group">
+    <div class="group-title">Density + Motion</div>
+
+    <label for="maxNumber">Max Number <span class="value" id="maxNumberVal"></span></label>
+    <input type="range" id="maxNumber" min="100" max="12000" value="2600" step="100">
+
+    <label for="speed">Animation Speed <span class="value" id="speedVal"></span></label>
+    <input type="range" id="speed" min="0" max="0.06" step="0.001" value="0.009">
+
+    <label for="radius">Scale <span class="value" id="radiusVal"></span></label>
+    <input type="range" id="radius" min="1" max="24" step="0.5" value="7">
+
+    <label for="trail">Trail Fade <span class="value" id="trailVal"></span></label>
+    <input type="range" id="trail" min="0.01" max="0.35" step="0.01" value="0.08">
+
+    <label for="glow">Glow <span class="value" id="glowVal"></span></label>
+    <input type="range" id="glow" min="0" max="30" step="1" value="12">
+
+    <label for="size">Point Size <span class="value" id="sizeVal"></span></label>
+    <input type="range" id="size" min="1" max="12" step="0.5" value="4">
+  </div>
+
+  <div class="control-group">
+    <div class="group-title">Actions</div>
+    <div class="button-row">
+      <button class="primary" id="pauseBtn">Pause</button>
+      <button class="green" id="randomBtn">Randomize</button>
+      <button id="clearBtn">Clear Trails</button>
+      <button id="uiBtn">Hide UI</button>
+      <button class="warm" id="saveBtn">Save PNG</button>
+      <button id="fullBtn">Fullscreen</button>
+    </div>
+  </div>
+</div>
+
+<div id="infoPanel">
+  <div id="sequenceName">Sequence</div>
+  <div id="sequenceDesc"></div>
+  <div class="stats">
+    <div class="stat"><div class="k">Drawn</div><div class="v" id="drawnStat">0</div></div>
+    <div class="stat"><div class="k">Density</div><div class="v" id="densityStat">0%</div></div>
+    <div class="stat"><div class="k">FPS</div><div class="v" id="fpsStat">60</div></div>
+  </div>
+  <div class="hotkeys">
+    <span class="pill"><kbd>Space</kbd> pause</span>
+    <span class="pill"><kbd>R</kbd> random</span>
+    <span class="pill"><kbd>C</kbd> clear</span>
+    <span class="pill"><kbd>H</kbd> hide UI</span>
+  </div>
+</div>
+
 <script>
 const canvas = document.getElementById('art');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+const ctx = canvas.getContext('2d', { alpha: false });
 
-// Number theory helpers
-function isPrime(n){if(n<2)return false;for(let i=2;i<=Math.sqrt(n);i++)if(n%i===0)return false;return true;}
-function fibonacci(n){if(n<=1)return n;let a=0,b=1;for(let i=2;i<=n;i++){[a,b]=[b,a+b];}return b;}
-function triangular(n){return n*(n+1)/2;}
-function factorCount(n){let c=0;for(let i=1;i<=n;i++)if(n%i===0)c++; return c;}
-
-// 15 lightweight sequences
-const sequences = {
-  "Primes": n=>isPrime(n),
-  "Fibonacci": n=>true,
-  "Squares": n=>true,
-  "Cubes": n=>true,
-  "Triangular": n=>true,
-  "Even": n=>n%2===0,
-  "Odd": n=>n%2===1,
-  "Multiples of 3": n=>n%3===0,
-  "Multiples of 5": n=>n%5===0,
-  "Pentagonal": n=>(Math.sqrt(24*n+1)+1)/6%1===0,
-  "Hexagonal": n=>(Math.sqrt(8*n+1)+1)/4%1===0,
-  "Harshad": n=>n%[...String(n)].reduce((a,d)=>a+Number(d),0)===0,
-  "Abundant": n=>{let s=0;for(let i=1;i<n;i++)if(n%i===0)s+=i;return s>n;},
-  "Deficient": n=>{let s=0;for(let i=1;i<n;i++)if(n%i===0)s+=i;return s<n;},
-  "Factor Count Even": n=>factorCount(n)%2===0
+const els = {
+  sequence: document.getElementById('sequence'),
+  layout: document.getElementById('layout'),
+  mode: document.getElementById('mode'),
+  shape: document.getElementById('shape'),
+  maxNumber: document.getElementById('maxNumber'),
+  speed: document.getElementById('speed'),
+  radius: document.getElementById('radius'),
+  trail: document.getElementById('trail'),
+  glow: document.getElementById('glow'),
+  size: document.getElementById('size'),
+  pauseBtn: document.getElementById('pauseBtn'),
+  randomBtn: document.getElementById('randomBtn'),
+  clearBtn: document.getElementById('clearBtn'),
+  uiBtn: document.getElementById('uiBtn'),
+  saveBtn: document.getElementById('saveBtn'),
+  fullBtn: document.getElementById('fullBtn'),
+  sequenceName: document.getElementById('sequenceName'),
+  sequenceDesc: document.getElementById('sequenceDesc'),
+  drawnStat: document.getElementById('drawnStat'),
+  densityStat: document.getElementById('densityStat'),
+  fpsStat: document.getElementById('fpsStat')
 };
 
-// Populate dropdown
-const seqSelect=document.getElementById('sequence');
-for(const key in sequences){
-  const opt=document.createElement('option');
-  opt.value=key;
-  opt.textContent=key;
-  seqSelect.appendChild(opt);
-}
-let currentSequence = seqSelect.value;
-seqSelect.addEventListener('change',()=>{ currentSequence = seqSelect.value; });
+const rangeLabels = {
+  maxNumber: n => Number(n).toLocaleString(),
+  speed: n => Number(n).toFixed(3),
+  radius: n => Number(n).toFixed(1),
+  trail: n => Number(n).toFixed(2),
+  glow: n => `${n}px`,
+  size: n => Number(n).toFixed(1)
+};
 
-// Color function
-function numberToColor(n,time,mode){
-  const t = time*0.02;
-  switch(mode){
-    case'rainbow': return `hsl(${(n*137.5 + t)%360}, 70%, 50%)`;
-    case'terminal': return `hsl(120, 100%, ${50 + 25*Math.sin(t + n)}%)`;
-    case'bw': const gray = 50 + 30*Math.sin(t + n); return `hsl(0,0%,${gray}%)`;
-    case'rwb': const colors=['red','white','blue']; return colors[Math.floor((Math.sin(t+n)+1)*0.5*colors.length)%colors.length];
-    case'halloween': return `hsl(${30 + 30*Math.sin(t+n)}, 100%, 50%)`;
-    default: return 'white';
+const sequenceInfo = {
+  "Primes": "Highlights prime numbers. The golden-angle layout creates classic Ulam-like prime constellations.",
+  "Twin Primes": "Numbers n where both n and n + 2 are prime.",
+  "Fibonacci": "The Fibonacci sequence plotted by value. It grows fast, so the canvas becomes sparse and dramatic.",
+  "Squares": "Perfect squares. Watch the spacing stretch as n² grows.",
+  "Cubes": "Perfect cubes. A sparse, explosive sequence.",
+  "Triangular": "Triangular numbers n(n+1)/2.",
+  "Pentagonal": "Pentagonal numbers n(3n−1)/2.",
+  "Hexagonal": "Hexagonal numbers n(2n−1).",
+  "Powers of 2": "Numbers of the form 2^k.",
+  "Factorials": "Numbers of the form n!. Very sparse and rapidly growing.",
+  "Even": "All even numbers.",
+  "Odd": "All odd numbers.",
+  "Multiples of 3": "All multiples of 3.",
+  "Multiples of 5": "All multiples of 5.",
+  "Perfect Numbers": "Numbers equal to the sum of their proper divisors.",
+  "Abundant": "Numbers whose proper divisors sum to more than the number.",
+  "Deficient": "Numbers whose proper divisors sum to less than the number.",
+  "Highly Composite": "Numbers that set a new record for number of divisors.",
+  "Harshad": "Numbers divisible by the sum of their digits.",
+  "Squarefree": "Numbers not divisible by any perfect square greater than 1.",
+  "Palindromes": "Numbers that read the same forward and backward.",
+  "Happy Numbers": "Numbers that eventually reach 1 under repeated sum-of-squares-of-digits.",
+  "Collatz Peaks": "Numbers whose Collatz path reaches a new high relative to nearby values.",
+  "Factor Count Even": "Numbers with an even number of divisors. Non-squares usually appear here.",
+  "Modulo 7 Residues 1,2,4": "Numbers that are quadratic-residue-like modulo 7: remainder 1, 2, or 4."
+};
+
+function isPrimeBasic(n){
+  if(n < 2) return false;
+  if(n === 2) return true;
+  if(n % 2 === 0) return false;
+  for(let i = 3; i * i <= n; i += 2) if(n % i === 0) return false;
+  return true;
+}
+
+function digitSum(n){ return String(n).split('').reduce((a,d)=>a + Number(d), 0); }
+function triangular(n){ return n * (n + 1) / 2; }
+function pentagonal(n){ return n * (3*n - 1) / 2; }
+function hexagonal(n){ return n * (2*n - 1); }
+function isPalindrome(n){ const s = String(n); return s === [...s].reverse().join(''); }
+function sumProperDivisors(n){
+  if(n <= 1) return 0;
+  let sum = 1;
+  for(let i = 2; i * i <= n; i++){
+    if(n % i === 0){
+      sum += i;
+      const pair = n / i;
+      if(pair !== i) sum += pair;
+    }
+  }
+  return sum;
+}
+function factorCount(n){
+  let count = 1;
+  let x = n;
+  for(let p = 2; p * p <= x; p++){
+    if(x % p === 0){
+      let e = 0;
+      while(x % p === 0){ x /= p; e++; }
+      count *= (e + 1);
+    }
+  }
+  if(x > 1) count *= 2;
+  return count;
+}
+function isSquarefree(n){
+  for(let p = 2; p * p <= n; p++){
+    const sq = p * p;
+    if(n % sq === 0) return false;
+  }
+  return true;
+}
+function isHappy(n){
+  const seen = new Set();
+  let x = n;
+  while(x !== 1 && !seen.has(x)){
+    seen.add(x);
+    x = String(x).split('').reduce((a,d)=>a + Number(d) ** 2, 0);
+  }
+  return x === 1;
+}
+function collatzPeak(n){
+  let x = n, max = n, steps = 0;
+  while(x !== 1 && steps < 500){
+    x = x % 2 === 0 ? x / 2 : 3 * x + 1;
+    if(x > max) max = x;
+    steps++;
+  }
+  return max > n * 8;
+}
+
+const sequenceGenerators = {
+  "Primes": max => Array.from({length:max},(_,i)=>i+1).filter(isPrimeBasic),
+  "Twin Primes": max => Array.from({length:max},(_,i)=>i+1).filter(n => isPrimeBasic(n) && isPrimeBasic(n + 2)),
+  "Fibonacci": max => { const arr=[]; let a=1,b=1; while(a<=max){ arr.push(a); [a,b]=[b,a+b]; } return [...new Set(arr)]; },
+  "Squares": max => { const arr=[]; for(let n=1;n*n<=max;n++) arr.push(n*n); return arr; },
+  "Cubes": max => { const arr=[]; for(let n=1;n**3<=max;n++) arr.push(n**3); return arr; },
+  "Triangular": max => { const arr=[]; for(let n=1;triangular(n)<=max;n++) arr.push(triangular(n)); return arr; },
+  "Pentagonal": max => { const arr=[]; for(let n=1;pentagonal(n)<=max;n++) arr.push(pentagonal(n)); return arr; },
+  "Hexagonal": max => { const arr=[]; for(let n=1;hexagonal(n)<=max;n++) arr.push(hexagonal(n)); return arr; },
+  "Powers of 2": max => { const arr=[]; for(let n=1;n<=max;n*=2) arr.push(n); return arr; },
+  "Factorials": max => { const arr=[]; let f=1; for(let n=1;f<=max;n++){ f*=n; if(f<=max) arr.push(f); } return [...new Set(arr)]; },
+  "Even": max => Array.from({length:Math.floor(max/2)},(_,i)=>(i+1)*2),
+  "Odd": max => Array.from({length:Math.ceil(max/2)},(_,i)=>i*2+1).filter(n=>n<=max),
+  "Multiples of 3": max => Array.from({length:Math.floor(max/3)},(_,i)=>(i+1)*3),
+  "Multiples of 5": max => Array.from({length:Math.floor(max/5)},(_,i)=>(i+1)*5),
+  "Perfect Numbers": max => Array.from({length:max},(_,i)=>i+1).filter(n => sumProperDivisors(n) === n),
+  "Abundant": max => Array.from({length:max},(_,i)=>i+1).filter(n => sumProperDivisors(n) > n),
+  "Deficient": max => Array.from({length:max},(_,i)=>i+1).filter(n => sumProperDivisors(n) < n),
+  "Highly Composite": max => { const arr=[]; let record=0; for(let n=1;n<=max;n++){ const d=factorCount(n); if(d>record){ arr.push(n); record=d; }} return arr; },
+  "Harshad": max => Array.from({length:max},(_,i)=>i+1).filter(n => n % digitSum(n) === 0),
+  "Squarefree": max => Array.from({length:max},(_,i)=>i+1).filter(isSquarefree),
+  "Palindromes": max => Array.from({length:max},(_,i)=>i+1).filter(isPalindrome),
+  "Happy Numbers": max => Array.from({length:max},(_,i)=>i+1).filter(isHappy),
+  "Collatz Peaks": max => Array.from({length:max},(_,i)=>i+1).filter(collatzPeak),
+  "Factor Count Even": max => Array.from({length:max},(_,i)=>i+1).filter(n => factorCount(n) % 2 === 0),
+  "Modulo 7 Residues 1,2,4": max => Array.from({length:max},(_,i)=>i+1).filter(n => [1,2,4].includes(n % 7))
+};
+
+for(const key of Object.keys(sequenceGenerators)){
+  const opt = document.createElement('option');
+  opt.value = key;
+  opt.textContent = key;
+  els.sequence.appendChild(opt);
+}
+els.sequence.value = "Primes";
+
+let dpr = 1;
+let W = 0, H = 0, CX = 0, CY = 0;
+let time = 0;
+let paused = false;
+let needsRebuild = true;
+let points = [];
+let lastFrame = performance.now();
+let fps = 60;
+
+function resize(){
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  CX = W / 2;
+  CY = H / 2;
+  canvas.width = Math.floor(W * dpr);
+  canvas.height = Math.floor(H * dpr);
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  clearCanvas();
+}
+window.addEventListener('resize', resize);
+
+function clearCanvas(){
+  const g = ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0, '#050816');
+  g.addColorStop(.55, '#0b1028');
+  g.addColorStop(1, '#130821');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+}
+
+function updateRangeLabels(){
+  for(const [id, fn] of Object.entries(rangeLabels)){
+    document.getElementById(id + 'Val').textContent = fn(els[id].value);
   }
 }
 
-// Fibonacci cache
-const fibCache=[0,1];
-function getFib(n){while(fibCache.length<=n){fibCache.push(fibCache[fibCache.length-1]+fibCache[fibCache.length-2]);}return fibCache[n];}
+function rebuild(){
+  const max = Number(els.maxNumber.value);
+  const values = sequenceGenerators[els.sequence.value](max).filter(n => n <= max);
+  points = values.map((value, index) => ({
+    value,
+    index,
+    divisors: factorCount(value || 1),
+    angleSeed: value * 137.50776405003785 * Math.PI / 180
+  }));
+  els.sequenceName.textContent = els.sequence.value;
+  els.sequenceDesc.textContent = sequenceInfo[els.sequence.value] || "";
+  els.drawnStat.textContent = points.length.toLocaleString();
+  els.densityStat.textContent = `${Math.round(points.length / max * 1000) / 10}%`;
+  needsRebuild = false;
+}
 
-// Draw polygon
-function drawShape(x,y,size,sides,color,rotation){
-  ctx.save();
-  ctx.translate(x,y);
-  ctx.rotate(rotation);
-  ctx.fillStyle=color;
+function palette(value, index, t, mode){
+  const hue = (value * 137.5077 + t * 28 + index * 0.7) % 360;
+  switch(mode){
+    case 'aurora': return `hsl(${(185 + Math.sin(t*.7 + index*.02)*75 + value*.11)%360}, 90%, ${58 + 14*Math.sin(t + value*.011)}%)`;
+    case 'rainbow': return `hsl(${hue}, 92%, 60%)`;
+    case 'fire': return `hsl(${8 + (value * 11 + t * 40) % 55}, 100%, ${48 + 16*Math.sin(t + index*.04)}%)`;
+    case 'ocean': return `hsl(${178 + (value * 9 + t * 20) % 72}, 90%, ${48 + 18*Math.sin(t + value*.02)}%)`;
+    case 'terminal': return `hsl(125, 100%, ${42 + 28*Math.sin(t * 2 + value)}%)`;
+    case 'candy': return `hsl(${300 + 55*Math.sin(value*.12 + t)}, 90%, 66%)`;
+    case 'rwb': return ['#ef4444','#ffffff','#2563eb'][Math.abs(Math.floor(value + t*2)) % 3];
+    case 'bw': {
+      const gray = 58 + 32*Math.sin(t + value*.13);
+      return `hsl(0,0%,${gray}%)`;
+    }
+    case 'halloween': return `hsl(${28 + 26*Math.sin(t + value*.08)}, 100%, 54%)`;
+    default: return '#fff';
+  }
+}
+
+function positionFor(p, layout, scale, t){
+  const v = p.value;
+  const i = p.index;
+  if(layout === 'phyllotaxis'){
+    const r = Math.sqrt(v) * scale;
+    const a = p.angleSeed + t * 0.25;
+    return [CX + r*Math.cos(a), CY + r*Math.sin(a)];
+  }
+  if(layout === 'archimedean'){
+    const a = v * 0.22 + t * 0.18;
+    const r = v * scale * 0.033;
+    return [CX + r*Math.cos(a), CY + r*Math.sin(a)];
+  }
+  if(layout === 'mandala'){
+    const petals = 7 + (p.divisors % 8);
+    const a = p.angleSeed + t * 0.35;
+    const base = Math.sqrt(v) * scale * .82;
+    const wave = 1 + .22 * Math.sin(petals * a + t * 1.3);
+    return [CX + base*wave*Math.cos(a), CY + base*wave*Math.sin(a)];
+  }
+  if(layout === 'orbit'){
+    const ring = (p.divisors % 14) + 1;
+    const r = ring * scale * 12 + Math.sin(t + i*.08) * scale * 4;
+    const a = i * .22 + v * .007 + t * (0.15 + ring*.006);
+    return [CX + r*Math.cos(a), CY + r*Math.sin(a)];
+  }
+  if(layout === 'grid'){
+    const cols = Math.max(16, Math.floor(Math.sqrt(Number(els.maxNumber.value))));
+    const cell = Math.min(W, H) / cols * 1.18;
+    const x = CX - cols*cell/2 + (v % cols) * cell;
+    const y = CY - cols*cell/2 + Math.floor(v / cols) * cell;
+    return [x + Math.sin(t + i)*cell*.12, y + Math.cos(t*.8 + i)*cell*.12];
+  }
+  if(layout === 'waves'){
+    const x = (v / Number(els.maxNumber.value)) * W;
+    const y = CY + Math.sin(v*.033 + t*2.1) * H*.23 + Math.cos(v*.011 + t*.9) * H*.13;
+    return [x, y];
+  }
+  return [CX, CY];
+}
+
+function drawPolygon(x,y,r,sides,rot){
   ctx.beginPath();
-  for(let i=0;i<sides;i++){
-    const angle=i*2*Math.PI/sides;
-    ctx.lineTo(Math.cos(angle)*size,Math.sin(angle)*size);
+  for(let k=0;k<sides;k++){
+    const a = rot + k * Math.PI * 2 / sides;
+    const px = x + Math.cos(a) * r;
+    const py = y + Math.sin(a) * r;
+    if(k===0) ctx.moveTo(px,py);
+    else ctx.lineTo(px,py);
   }
   ctx.closePath();
   ctx.fill();
-  ctx.restore();
 }
 
-let time=0;
+function drawStar(x,y,r,points,rot){
+  ctx.beginPath();
+  const total = points * 2;
+  for(let k=0;k<total;k++){
+    const rr = k % 2 === 0 ? r : r * .42;
+    const a = rot + k * Math.PI * 2 / total;
+    const px = x + Math.cos(a) * rr;
+    const py = y + Math.sin(a) * rr;
+    if(k===0) ctx.moveTo(px,py);
+    else ctx.lineTo(px,py);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
 
-function draw(){
-  const maxNumber=parseInt(document.getElementById('maxNumber').value);
-  const speed=parseFloat(document.getElementById('speed').value);
-  const radiusScale=parseFloat(document.getElementById('radius').value);
-  const trailOpacity=parseFloat(document.getElementById('trail').value);
-  const mode=document.getElementById('mode').value;
+function drawPoint(p, x, y, color, size, t){
+  const shape = els.shape.value;
+  const sides = 3 + (p.divisors % 6);
+  const rot = t + p.index * .07;
+  const r = size * (0.72 + Math.min(1.6, Math.log2(p.divisors + 1) / 4));
 
-  ctx.fillStyle=`rgba(0,0,0,${trailOpacity})`;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = color;
 
-  // Precompute sequence numbers
-  const seqNumbers = [];
-  for(let n=1;n<=maxNumber;n++){
-    if(sequences[currentSequence](n)){
-      if(currentSequence==="Fibonacci") seqNumbers.push(getFib(n));
-      else if(currentSequence==="Squares") seqNumbers.push(n*n);
-      else if(currentSequence==="Cubes") seqNumbers.push(n**3);
-      else if(currentSequence==="Triangular") seqNumbers.push(triangular(n));
-      else seqNumbers.push(n);
+  if(shape === 'circle'){
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fill();
+  } else if(shape === 'polygon'){
+    drawPolygon(x,y,r,sides,rot);
+  } else if(shape === 'star'){
+    drawStar(x,y,r,5 + (p.divisors % 4),rot);
+  } else if(shape === 'dash'){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(rot);
+    ctx.fillRect(-r*1.8,-r*.34,r*3.6,r*.68);
+    ctx.restore();
+  } else {
+    if(p.divisors > 10) drawStar(x,y,r,5 + (p.divisors % 4),rot);
+    else if(p.divisors % 2 === 0) drawPolygon(x,y,r,sides,rot);
+    else {
+      ctx.beginPath();
+      ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fill();
     }
   }
-
-  // Draw each number
-  seqNumbers.forEach((value,nIndex)=>{
-    const angle = value*137.508*Math.PI/180 + time*speed;
-    const r = Math.sqrt(value)*radiusScale;
-    const x = canvas.width/2 + r*Math.cos(angle);
-    const y = canvas.height/2 + r*Math.sin(angle);
-    const sides = 3 + factorCount(nIndex+1)%5; // number of sides 3-7
-    const size = 3 + Math.sin(time*0.02 + nIndex*0.05);
-    const color = numberToColor(value,time,mode);
-    const rotation = time*0.02 + nIndex*0.05;
-    drawShape(x,y,size,sides,color,rotation);
-  });
-
-  time += 1;
-  requestAnimationFrame(draw);
 }
 
-draw();
+function animate(now){
+  const dt = Math.min(50, now - lastFrame);
+  lastFrame = now;
+  fps = fps * .92 + (1000 / Math.max(dt,1)) * .08;
+  els.fpsStat.textContent = Math.round(fps);
+
+  if(needsRebuild) rebuild();
+  updateRangeLabels();
+
+  const speed = Number(els.speed.value);
+  if(!paused) time += speed * 18;
+
+  const fade = Number(els.trail.value);
+  ctx.fillStyle = `rgba(5, 8, 22, ${fade})`;
+  ctx.fillRect(0,0,W,H);
+
+  const glow = Number(els.glow.value);
+  ctx.shadowBlur = glow;
+  ctx.globalCompositeOperation = 'lighter';
+
+  const layout = els.layout.value;
+  const mode = els.mode.value;
+  const scale = Number(els.radius.value);
+  const size = Number(els.size.value);
+
+  const t = time;
+  for(const p of points){
+    const [x,y] = positionFor(p, layout, scale, t);
+    if(x < -80 || x > W + 80 || y < -80 || y > H + 80) continue;
+    const color = palette(p.value, p.index, t, mode);
+    ctx.shadowColor = color;
+    drawPoint(p, x, y, color, size, t);
+  }
+
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.shadowBlur = 0;
+  requestAnimationFrame(animate);
+}
+
+function randomize(){
+  const seqs = [...els.sequence.options].map(o=>o.value);
+  const layouts = [...els.layout.options].map(o=>o.value);
+  const modes = [...els.mode.options].map(o=>o.value);
+  const shapes = [...els.shape.options].map(o=>o.value);
+
+  els.sequence.value = seqs[Math.floor(Math.random()*seqs.length)];
+  els.layout.value = layouts[Math.floor(Math.random()*layouts.length)];
+  els.mode.value = modes[Math.floor(Math.random()*modes.length)];
+  els.shape.value = shapes[Math.floor(Math.random()*shapes.length)];
+  els.maxNumber.value = 1000 + Math.floor(Math.random()*80)*100;
+  els.speed.value = (0.004 + Math.random()*0.035).toFixed(3);
+  els.radius.value = (3 + Math.random()*13).toFixed(1);
+  els.trail.value = (0.03 + Math.random()*0.12).toFixed(2);
+  els.glow.value = Math.floor(8 + Math.random()*18);
+  els.size.value = (2 + Math.random()*5).toFixed(1);
+  needsRebuild = true;
+  clearCanvas();
+}
+
+function savePNG(){
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `number-theory-art-${els.sequence.value.toLowerCase().replace(/\s+/g,'-')}.png`;
+  a.click();
+}
+
+function togglePause(){
+  paused = !paused;
+  els.pauseBtn.textContent = paused ? "Play" : "Pause";
+}
+
+els.sequence.addEventListener('change', () => { needsRebuild = true; clearCanvas(); });
+els.maxNumber.addEventListener('input', () => { needsRebuild = true; clearCanvas(); });
+for(const el of [els.layout, els.mode, els.shape, els.speed, els.radius, els.trail, els.glow, els.size]){
+  el.addEventListener('input', updateRangeLabels);
+  el.addEventListener('change', updateRangeLabels);
+}
+
+els.pauseBtn.addEventListener('click', togglePause);
+els.randomBtn.addEventListener('click', randomize);
+els.clearBtn.addEventListener('click', clearCanvas);
+els.uiBtn.addEventListener('click', () => document.body.classList.toggle('hide-ui'));
+els.saveBtn.addEventListener('click', savePNG);
+els.fullBtn.addEventListener('click', () => {
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+});
+
+document.addEventListener('keydown', e => {
+  if(e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+  if(e.code === 'Space'){ e.preventDefault(); togglePause(); }
+  if(e.key.toLowerCase() === 'r') randomize();
+  if(e.key.toLowerCase() === 'c') clearCanvas();
+  if(e.key.toLowerCase() === 'h') document.body.classList.toggle('hide-ui');
+});
+
+resize();
+updateRangeLabels();
+clearCanvas();
+requestAnimationFrame(animate);
 </script>
 </body>
 </html>
